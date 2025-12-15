@@ -1,267 +1,130 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Image Generator - Working Version</title>
+    <title>🆓 FREE AI Image Generator - Working</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
         body { 
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
-            color: white; min-height: 100vh; padding: 20px; 
+            font-family: Arial, sans-serif; 
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1); 
+            margin: 0; padding: 20px; min-height: 100vh;
+            color: white; text-align: center;
         }
-        .container { max-width: 1000px; margin: 0 auto; }
-        h1 { text-align: center; margin: 30px 0; font-size: 2.5em; text-shadow: 0 3px 10px rgba(0,0,0,0.5); }
-        
-        .generate-section { text-align: center; margin: 40px 0; }
-        .generate-btn {
-            background: linear-gradient(45deg, #ff6b35, #f7931e, #ffd23f);
-            border: none; padding: 20px 50px; font-size: 22px; font-weight: bold;
-            border-radius: 50px; cursor: pointer; color: white; 
-            box-shadow: 0 10px 30px rgba(255,107,53,0.4);
-            transition: all 0.3s;
+        .card { 
+            background: rgba(255,255,255,0.1); 
+            backdrop-filter: blur(20px); 
+            border-radius: 20px; 
+            padding: 30px; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
-        .generate-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(255,107,53,0.5); }
-        .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        
-        .status { text-align: center; margin: 20px 0; font-size: 18px; min-height: 30px; }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); 
-            border-top: 4px solid #ffd23f; border-radius: 50%; 
-            animation: spin 1s linear infinite; margin: 0 auto 10px;
-            display: none;
+        button { 
+            background: linear-gradient(45deg, #ff4757, #ff7831); 
+            border: none; color: white; 
+            padding: 15px 30px; font-size: 18px; 
+            border-radius: 50px; cursor: pointer; 
+            margin: 10px; transition: all 0.3s;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .image-container {
-            background: rgba(255,255,255,0.1); backdrop-filter: blur(15px);
-            border-radius: 20px; padding: 30px; margin: 30px 0; text-align: center;
-            border: 1px solid rgba(255,255,255,0.2); display: none;
+        button:hover { transform: scale(1.05); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .preset { 
+            display: inline-block; background: rgba(255,255,255,0.2); 
+            padding: 10px 20px; margin: 5px; border-radius: 25px; 
+            cursor: pointer; transition: all 0.3s;
         }
-        .generated-img { 
-            max-width: 90%; max-height: 500px; border-radius: 15px; 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-        }
-        
-        .presets { 
-            display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin: 30px 0; 
-        }
-        .preset-btn { 
-            background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); 
-            padding: 12px 20px; border-radius: 25px; cursor: pointer; color: white;
-            transition: all 0.3s; font-size: 14px; min-width: 120px;
-        }
-        .preset-btn:hover, .preset-btn.active { 
-            background: rgba(255,255,255,0.4); border-color: #ffd23f; 
-            transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,210,63,0.4);
-        }
-        
-        .stats { display: flex; justify-content: center; gap: 40px; margin: 20px 0; font-size: 16px; }
-        .stat { text-align: center; }
-        .error { color: #ff6b6b; background: rgba(255,107,107,0.2); padding: 15px; border-radius: 10px; margin: 20px 0; display: none; }
-        
-        @media (max-width: 768px) { 
-            .presets { flex-direction: column; align-items: center; }
-            .stats { flex-direction: column; gap: 20px; }
-            .generated-img { max-height: 400px; }
-        }
+        .preset.active, .preset:hover { background: rgba(255,255,255,0.4); }
+        #output { margin-top: 30px; }
+        .loading { font-size: 20px; margin: 20px; }
+        img { max-width: 100%; max-height: 500px; border-radius: 15px; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1><i class="fas fa-robot"></i> AI Image Generator</h1>
+    <div class="card">
+        <h1>🎨 AI Image Generator</h1>
+        <p>Choose style & click Generate</p>
         
-        <div class="stats">
-            <div class="stat"><strong id="todayCount">0</strong><br><small>Aaj ke Images</small></div>
-            <div class="stat"><strong id="totalCount">0</strong><br><small>Total Images</small></div>
+        <div style="margin: 20px 0;">
+            <div class="preset active" onclick="setPrompt('0')">🚀 Cyberpunk City</div>
+            <div class="preset" onclick="setPrompt('1')">🏞️ Fantasy Forest</div>
+            <div class="preset" onclick="setPrompt('2')">👤 Beautiful Portrait</div>
+            <div class="preset" onclick="setPrompt('3')">🌅 Sunset Landscape</div>
+            <div class="preset" onclick="setPrompt('4')">🤖 Futuristic Robot</div>
         </div>
 
-        <div class="presets">
-            <button class="preset-btn active" data-prompt="cyberpunk city night neon lights">
-                <i class="fas fa-city"></i> Cyberpunk
-            </button>
-            <button class="preset-btn" data-prompt="fantasy landscape magical forest glowing mushrooms">
-                <i class="fas fa-mountain"></i> Fantasy
-            </button>
-            <button class="preset-btn" data-prompt="beautiful woman portrait detailed jewelry">
-                <i class="fas fa-user"></i> Portrait
-            </button>
-            <button class="preset-btn" data-prompt="mountain sunset golden hour epic landscape">
-                <i class="fas fa-sun"></i> Sunset
-            </button>
-            <button class="preset-btn" data-prompt="futuristic robot sci-fi dramatic lighting">
-                <i class="fas fa-robot"></i> Robot
-            </button>
+        <button onclick="generateImage()">✨ GENERATE IMAGE</button>
+        
+        <div id="output">
+            <div class="loading" id="loading" style="display:none;">🔄 Generating... (10 sec)</div>
+            <img id="result" style="display:none;" onerror="handleError()">
         </div>
-
-        <div class="generate-section">
-            <button class="generate-btn" id="generateBtn">
-                <i class="fas fa-magic"></i> Generate Image
-            </button>
-            <div class="status" id="status"></div>
-            <div class="spinner" id="spinner"></div>
-        </div>
-
-        <div class="image-container" id="imageContainer">
-            <img class="generated-img" id="generatedImg" alt="AI Generated Image">
-            <div style="margin-top: 20px; font-size: 16px;">
-                <i class="fas fa-download"></i> Right click save karo | 
-                <i class="fas fa-redo"></i> Naya preset choose karo
-            </div>
-        </div>
-
-        <div class="error" id="errorMsg"></div>
+        
+        <p style="margin-top: 20px; opacity: 0.8;">
+            💾 Right click to save | 🔄 Click preset for new style
+        </p>
     </div>
 
     <script>
-        class SimpleAIGenerator {
-            constructor() {
-                this.today = new Date().toDateString();
-                this.count = 0;
-                this.total = 0;
-                this.init();
-            }
-
-            init() {
-                this.loadData();
-                this.bindEvents();
-            }
-
-            loadData() {
-                try {
-                    const daily = localStorage.getItem('ai_daily');
-                    if (daily) {
-                        const data = JSON.parse(daily);
-                        this.count = data.date === this.today ? data.count : 0;
-                    }
-                    this.total = parseInt(localStorage.getItem('ai_total') || '0');
-                    this.updateStats();
-                } catch(e) {
-                    this.count = 0;
-                    this.total = 0;
-                }
-            }
-
-            saveData() {
-                localStorage.setItem('ai_daily', JSON.stringify({date: this.today, count: this.count}));
-                localStorage.setItem('ai_total', this.total);
-            }
-
-            updateStats() {
-                document.getElementById('todayCount').textContent = this.count;
-                document.getElementById('totalCount').textContent = this.total;
-            }
-
-            bindEvents() {
-                const btn = document.getElementById('generateBtn');
-                const presets = document.querySelectorAll('.preset-btn');
-                
-                // Generate button
-                btn.addEventListener('click', () => this.generate());
-                
-                // Preset buttons
-                presets.forEach(p => {
-                    p.addEventListener('click', (e) => {
-                        presets.forEach(pp => pp.classList.remove('active'));
-                        e.currentTarget.classList.add('active');
-                    });
-                });
-                
-                // Enter key
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && !btn.disabled) this.generate();
-                });
-            }
-
-            showStatus(msg, isError = false) {
-                const status = document.getElementById('status');
-                const error = document.getElementById('errorMsg');
-                status.textContent = msg;
-                status.style.color = isError ? '#ff6b6b' : 'white';
-                
-                if (isError) {
-                    error.textContent = msg;
-                    error.style.display = 'block';
-                } else {
-                    error.style.display = 'none';
-                }
-            }
-
-            showSpinner(show) {
-                document.getElementById('spinner').style.display = show ? 'block' : 'none';
-            }
-
-            async generate() {
-                if (this.count >= 30) {
-                    this.showStatus('Aaj ka limit (30 images) khatam. Kal aao! 😊', true);
-                    return;
-                }
-
-                const btn = document.getElementById('generateBtn');
-                const imgContainer = document.getElementById('imageContainer');
-                const img = document.getElementById('generatedImg');
-                
-                // UI update
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ban raha hai...';
-                this.showSpinner(true);
-                this.showStatus('AI image bana raha hai (15-30 sec)...');
-                imgContainer.style.display = 'none';
-
-                try {
-                    // Get preset
-                    const active = document.querySelector('.preset-btn.active');
-                    let prompt = active ? active.dataset.prompt : 'beautiful landscape';
-                    
-                    // Magic enhancers
-                    const magic = ', masterpiece, best quality, 8k, ultra detailed, sharp focus';
-                    const fullPrompt = prompt + magic;
-                    
-                    const imageUrl = await this.getImage(fullPrompt);
-                    img.src = imageUrl;
-                    
-                    img.onload = () => {
-                        imgContainer.style.display = 'block';
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-magic"></i> Nayi Image';
-                        this.showStatus('Image ready! 🎉');
-                        this.showSpinner(false);
-                        
-                        this.count++;
-                        this.total++;
-                        this.saveData();
-                        this.updateStats();
-                        
-                        setTimeout(() => {
-                            btn.innerHTML = '<i class="fas fa-magic"></i> Generate Image';
-                        }, 2000);
-                    };
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    this.showStatus('AI busy hai. 10 sec wait karo!', true);
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-magic"></i> Generate Image';
-                    this.showSpinner(false);
-                }
-            }
-
-            async getImage(prompt) {
-                const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${Math.random()*10000}`;
+        const prompts = [
+            "cyberpunk city night neon lights, futuristic, highly detailed, 8k",
+            "fantasy forest glowing mushrooms magical atmosphere, masterpiece, 8k", 
+            "beautiful woman portrait intricate jewelry, photorealistic, cinematic lighting, 8k",
+            "epic mountain sunset golden hour, hyper realistic landscape, 8k hdr",
+            "futuristic robot sci-fi dramatic lighting, mechanical details, 8k"
+        ];
+        
+        let currentPrompt = 0;
+        
+        function setPrompt(index) {
+            document.querySelectorAll('.preset').forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+            currentPrompt = index;
+        }
+        
+        async function generateImage() {
+            const btn = event.target;
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Wait...';
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            
+            try {
+                // Using working free API (2025 stable)
+                const prompt = prompts[currentPrompt];
+                const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(
+                    `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=768&nologo=true&seed=${Math.random()*10000}`
+                )}`;
                 
                 const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('API error');
-                }
-                
                 const blob = await response.blob();
-                return URL.createObjectURL(blob);
+                const imageUrl = URL.createObjectURL(blob);
+                
+                result.src = imageUrl;
+                result.onload = () => {
+                    result.style.display = 'block';
+                    loading.style.display = 'none';
+                    btn.disabled = false;
+                    btn.innerHTML = '✨ NEW IMAGE';
+                    setTimeout(() => btn.innerHTML = '✨ GENERATE IMAGE', 2000);
+                };
+                
+            } catch(e) {
+                handleError();
             }
         }
-
-        // Start
-        new SimpleAIGenerator();
+        
+        function handleError() {
+            document.getElementById('loading').innerHTML = '❌ Try again in 10 sec';
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                event.target.disabled = false;
+                event.target.innerHTML = '✨ GENERATE IMAGE';
+            }, 2000);
+        }
     </script>
 </body>
 </html>
+
 
